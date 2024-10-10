@@ -2,6 +2,7 @@
 prompt1: .asciiz "Enter the first integer: "
 prompt2: .asciiz "Enter the second integer: "
 result_msg: .asciiz "the sum is: "
+array: .byte 2
 
 .text
 
@@ -35,3 +36,4 @@ main:
 	
 	li $v0, 10
 	syscall 
+	
