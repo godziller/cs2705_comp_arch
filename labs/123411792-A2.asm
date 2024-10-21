@@ -1,11 +1,13 @@
 .data
+	inputStr: .space 8        # reserve 3 bytes in the memory to be used for taking user input [xxx.yyy]
 	str2float: .float 
 	thousand: .float 1000.0 
 	announce: .asciiz "your name 123411792 is implementing the core assignment\n"
 	expStr: .asciiz "\nThe exponent part of the string is: \n"
 	fracStr: .asciiz "\nThe fractional part of the string is: \n"
+	finalStr: .asciiz "\n Final Added float registers: \n"
 	prompt1: .asciiz "$ Enter a real number [xxx.yyy]:"
-	inputStr: .space 8        # reserve 3 bytes in the memory to be used for taking user input [xxx.yyy]
+
 
 	testStr: .ascii "123.456"
 
@@ -54,19 +56,6 @@ main:
 	move $s2, $v0	#s2 now has the integer representation of the decimal part of the string.	
 	
 	
-	li $v0, 4
-	la $a0, fracStr
-	syscall
-	
-	li $v0, 1
-	move $a0, $s2
-	syscall
-	
-	
-	li $v0, 4
-	la $a0, expStr
-	syscall
-	
 	
 	# AT THIS POINT S0 AND S1 HAVE THE EXPONENT AND FRACTION AS INTEGERS.
 	#NEED TO TRANSFER TO FLOATING POINT REGISTERS AND CONVERT
@@ -78,19 +67,37 @@ main:
 	mtc1 $s2, $f2        # Move the integer(Fraction) in $s2 to floating-point register $f2
 	cvt.s.w $f2, $f2     # Convert the integer in $f2 to single-precision float
 	
+	li $v0, 4
+	la $a0, expStr
+	syscall
+	mov.s $f12, $f1 	# Move to OS output register
+	li $v0, 2
+	syscall
+	
 
 	lwc1 $f3, thousand    # Load the float value 1000.0 into $f3
-	div.s $f3, $f2, $f3  # Divide $f2 by $f3, result in $f3
+	div.s $f2, $f2, $f3  # Divide $f2 by $f3, result in $f2
+	mov.s $f12, $f2
+	
+	li $v0, 4
+	la $a0, fracStr
+	syscall
+	li $v0, 2
+	syscall
 	
 	# Add the two parts
-	add.s $f12, $f1, $f3	# Make it handy 'cos f12 is what the OS looks for
-	
+	add.s $f1, $f1, $f2
+	mov.s $f12, $f1		# Move to OS output register
+	li $v0, 4
+	la $a0, finalStr
+	syscall
+	li $v0, 2
+	syscall
 	
 	# Need to now store this 
 	s.s $f12, str2float
 	
-	li $v0, 2
-	syscall
+
 	
 	li $v0, 1
 	move $a0, $s1
@@ -178,5 +185,14 @@ exit:
 	lw $s0, 8($sp)    # restore $s0
 	addi $sp, $sp, 12 # adjust stack pointer back
 	jr $ra
+	
+int_to_ascii_hex_str:
+
+	# need to do some kinda mapping here between the int and ascii table.
+	# what we are chasing is 0xFF - so we need to do some mapping to tear out each 4bits and focus on each.
+	# with one 4 bits isolated. If its <10 then a simple +48 to get the ASCII rep of that int
+	# however if it is 10-16, then we need to get to A-F
+	# A = 10 = 65 in ascii - so if our 4 bits are 10 and we add 55 we get A
+	# F = 15 = 70 -- so again the add 55 looks like it could work
 
 	
