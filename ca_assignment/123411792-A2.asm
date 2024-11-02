@@ -1,9 +1,9 @@
 .data
-	str2float: .float 4
+	str2float: .float
 	thousand: .float 1000.0 
 	exponentHex: .asciiz "0xZZ "
 	mantissaHex: .asciiz "0xYYYYYY\n"
-	announce: .asciiz "your name 123411792 is implementing the core assignment\n"
+	announce: .asciiz "Darren Counihan 123411792 is implementing the core assignment\n"
 	expStr: .asciiz "\nThe exponent part of the string is:\n"
 	fracStr: .asciiz "\nThe fractional part of the string is:\n"
 	prompt1: .asciiz "$ Enter a real number [xxx.yyy]:"
