@@ -109,14 +109,14 @@ out:
 	
 
 print_hex:
-	add $sp, $sp -12
+	add $sp, $sp, -12
 	sw   $a0, 0($sp)       # store the registers we use
 	sw   $a1, 4($sp)       # in this procedure
 	sw   $a2, 8($sp)       # which are a0->2
 	
 	add $a1, $a1, $a2	# move to the char position in string to overwrite
 	bgeu  $a0, 10, plus_55
-	addiu, $a0, $a0, 48
+	addi, $a0, $a0, 48
 	sb $a0, 0($a1)
 	j exit
 plus_55:

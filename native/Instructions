@@ -1,0 +1,2 @@
+mips-linux-gnu-as helloworld.asm -o hello.o
+mips-linux-gnu-gcc hello.o -o hello -nostdlib -static
