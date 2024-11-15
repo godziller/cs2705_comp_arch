@@ -81,13 +81,19 @@ BAD_ADRS_EXCEPTION: 	.asciiz "===>   Bad data address exception   <===\n\n"
 		andi $k1, $k0, 0x00007c  	# Mask all but the exception code (bits 2 - 6) to zero.
 		srl  $k1, $k1, 2	  		# Shift two bits to the right to get the exception code in $k1
 		beqz $k1, __interrupt	# if exception code is zero --> it is  an interrupt
-__exception:			# exceptions are processed here 
-	# Practice TODO:replace OVERFLOW_CAUSE_VALUE by the corresponding number 
-	beq $k1,  12, __overflow_exception 	
+__exception:          # exceptions are processed here 
+    # Handle overflow exception
+    beq $k1, OVERFLOW_CAUSE_VALUE, __overflow_exception 
+    
+    # Handle bad address exception (exception code 4)
+    beq $k1, 4, __bad_address_exception   # Bad Address Exception (Exception Code 4)
+    
+    # Handle trap exception (exception code 12)
+    beq $k1, 12, __trap_exception         # Trap Exception (Exception Code 12)
 
-	# Practice TODO: Add needed code below to branch to label __bad_address_exception. 		
-	# Practice TODO: Add code to branch to label __trap_exception 
-	
+    # Default case: Unhandled Exception
+    j __unhandled_exception 
+    
 __unhandled_exception: 
 		# It's not really proper doing syscalls in an exception handler,
 		# but this handler is just for demonstration and this keeps it short	
@@ -158,8 +164,8 @@ __resume_from_exception:
         
 	#Practice TODO 2: Uncomment the following two instructions to avoid
 	# executing  the same instruction causing the current exception again.        
-        # addi $k0, $k0, 4    # Skip offending instruction by adding 4 to the value stored in EPC    
-        # mtc0 $k0, $14      # Update EPC in coprocessor 0.
+         addi $k0, $k0, 4    # Skip offending instruction by adding 4 to the value stored in EPC    
+         mtc0 $k0, $14      # Update EPC in coprocessor 0.
 __resume:
 		# Restore registers and reset processor state
 		lw      $v0, save_v0    # Restore $v0 before returning

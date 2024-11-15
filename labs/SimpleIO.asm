@@ -15,7 +15,7 @@ repeat:
 getChar: #no argument passed to this procedure
 	lui 		$t0, 0xffff      	# t0 = address of Keyboard control register  0xffff 0000
 	li 		$t1, 1            	# ready bit MASK (least significant bit) 0x0000 0001
-key_wait:
+key_wait:	
 	lbu 		$t2, ($t0)      	# Read keyboard control register  at  xffff 0000
 	and		$t2, $t2, $t1 	# Apply ready bit  mask 
 	beqz 	$t2, key_wait  	# 0 no key press --> busy waiting , 1 a key is pressed	
@@ -24,8 +24,9 @@ key_wait:
 	
 
 dispChar:  # $a0 has the ascii of the char to be displayed
-	lui 		$t0, 0xffff    	# t0 = base address  0xffff 0000
+	lui		$t0, 0xffff    	# t0 = base address  0xffff 0000
 	li 		$t1, 1           	# ready bit MASK (least significant bit) 0x0000 0001
+	
 loop:	lw 		$t2, 8($t0)   	# Read display control register  at  xffff 0008 
 	and		$t2, $t2, $t1 	# Apply deisplay ready bit  mask 
 	beqz 	$t2, loop  # 0 display not ready --> busy waiting , 1 --> ready 

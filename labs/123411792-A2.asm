@@ -1,4 +1,4 @@
-.data
+ .data
 	inputStr: .space 8        # reserve 3 bytes in the memory to be used for taking user input [xxx.yyy]
 	str2float: .float 
 	thousand: .float 1000.0 
