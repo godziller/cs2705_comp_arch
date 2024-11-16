@@ -3,7 +3,7 @@
 ###############################################################################
 	.data
 		message: .asciiz "the cpu is doing some important work\n"
-
+		character: .ascii ""
 
 	.globl main
 	.text
@@ -103,7 +103,7 @@ __interrupt:
 	# If the fired interrupt is a keyboard interrupt, 
 	# execute the code @ __keyboard_interrupt 
 
-    # Check the keyboard interrupt bit (bit 12)
+    # Check the keyboard interrupt bit (bit 8)
     andi $t0, $k0, 0xffff   # Mask the keyboard interrupt bit (bit 12)
     beqz $t0, __unhandled_interrupt   # If the keyboard interrupt bit is not set, go to unhandled interrupt
 
@@ -128,18 +128,18 @@ __unhandled_interrupt:
 __keyboard_interrupt: 
 	# Get the ASCII value of the pressed key from the keyboard's data register
     lui $t1, 0xffff  # Load the base address for MMIO for keyboard (use the correct address in your setup)
-    lw  $t2, 0($t1)  # Load the value of the pressed key into $t2
+    lw  $t2, 4($t1)  # Load the value of the pressed key into $t2
 
-    # Print the pressed key
-	li $v0, 11        # System call for printing a character
-	move $a0, $t2     # Move the character to $a0
-	syscall
 	
 	# Print the newline after the character
 	li $v0, 4         # System call for printing a string
 	la $a0, KEYBOARD_INTERRUPT
 	syscall
 	
+    # Print the pressed key
+	li $v0, 11        # System call for printing a character
+	la $a0, ($t2)     # Move the character to $a0
+	syscall
 	j __resume_from_exception
 
 __resume_from_exception: 	 
