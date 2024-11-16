@@ -1,31 +1,70 @@
 .data
 	message: .asciiz "The processor is doing useful work until it is interrupted - itteration  ####\n"
+	interupt_message: .asciiz "Interrupt x is fired\n"
+	inactive_msg: .asciiz "Interrupt x is inactive\n"
+
 .text
-	j get_char
-	li $s0, 0		#setting counter to 0 
+	main:
+		
+		li $s0, 0		#setting counter to 0 
 	
-	message_print:
+	loop:
+		#regularly calling the message print
 		li $v0, 4
 		la $a0, message
 		syscall 
-		subi $s0,$s0, 500
-		j get_char
+		
+		mfc0 $k0, $13	#move the cause bit into the 
+		li $t0, 0x1	#this is our mask used for checking bits
+		li $t1, 32	#32 interupt bits 
 	
+	check_for_interupt:
+		and $t2, $k0, $t0	#checking to see if bit is set. using mask
+		beqz $t2, interupt_innactive		#if bit not set then interupt is innactive
 		
-	get_char:
-		lui $t0, 0xffff      	# t0 = address of Keyboard control register  0xffff 0000
-		li $t1, 1            	# ready bit MASK (least significant bit) 0x0000 0001
+		#if the bit is 1 then an interupt is to be triggered 
+		li $v0, 4
+		la $a0, interupt_message
+		syscall
 		
-	key_wait:
-		addi $s0, $s0, 1
-		beq $s0, 500, message_print
-		lbu $t2, ($t0)      	# Read keyboard control register  at  xffff 0000
-		and $t2, $t2, $t1 		# Apply ready bit  mask 
-		beqz $t2, key_wait  			# 0 no key press --> busy waiting , 1 a key is pressed	
-		lbu $a0, 4($t0)      	# load RECEIVER_DATA to $a0 
-		bne $t2, 0, exit
-
-	exit:
+		#print the interupt number
+		move $a0, $t1		
 		li $v0, 1
 		syscall
-	
+		
+		j check_next_bit
+		
+	interupt_innactive:
+		#print the message and print the interupt number
+		li $v0, 1
+		la $a0, inactive_msg
+		syscall 
+		
+		move $a0, $t0	
+		li $v0, 1
+		syscall
+		
+		
+	check_next_bit:
+		#shifting left to next bit
+		addi $t1, $t1, 1	#incrementing the interupt number by 1 
+		sll $t0, $t0, 1		#shifting left to get the next bit to check 
+		bne $t1 33, check_for_interupt		#if not all the bits are checked, go again
+		
+		#increment the cycle counter 
+		addi $s0, $s0, 1
+		beq $s0, 500, print_message
+		j loop
+		
+	print_message:
+		li $v0, 4
+		la $a0, message
+		syscall
+		
+		#reset the counter 
+		li $s0, 0 
+		
+		#jump to start
+		j loop 
+		
+
